@@ -3,6 +3,7 @@ package com.example.employeessystem;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -31,6 +32,7 @@ public class Dao {
 		this.db = db;
 	}
 
+	// DBに登録された全社員を取得します。
 	public List<Employee> findAllEmployees() {
 		List<Employee> list = new ArrayList<Employee>();
 
@@ -55,6 +57,7 @@ public class Dao {
 		return list;
 	}
 
+	// DBに登録された全家族を取得します。
 	public List<Family> findAllFamily() {
 		List<Family> list = new ArrayList<Family>();
 
@@ -79,4 +82,22 @@ public class Dao {
 		return list;
 	}
 
+	// 1人分の家族のデータを追加します。
+	public long insertFamily(Family family) {
+		// ContentValuesはカラム名をキーとして、値を保存するクラスです。
+		ContentValues values = new ContentValues();
+
+		values.put(COLUMN_ID, family.get_id());
+		values.put(COLUMN_RELATIONSHIP, family.getRelationship());
+		values.put(COLUMN_NAME, family.getName());
+
+		return db.insert(FAMILY_TABLE_NAME, null, values);
+	}
+
+	// 1人分の家族のデータを削除します。
+
+	public int deleteFamily(String _id, String relationship) {
+		return db.delete(FAMILY_TABLE_NAME, " _id = '" + _id + "' AND relationship = '" + relationship + "'", null);
+
+	}
 }

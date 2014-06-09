@@ -8,6 +8,18 @@ public class Family {
 	private String relationship;// 社員と家族の関係（続柄）
 	private String name;// 家族の名前
 
+	public Family() {
+		_id = "00000";
+		relationship = "続柄";
+		name = "家族の名前";
+	}
+
+	public Family(String _id, String relationship, String name) {
+		this._id = _id;
+		this.relationship = relationship;
+		this.name = name;
+	}
+
 	public String get_id() {
 		return _id;
 	}

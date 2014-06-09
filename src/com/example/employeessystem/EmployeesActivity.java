@@ -23,6 +23,9 @@ import android.widget.SimpleAdapter;
 
 public class EmployeesActivity extends Activity {
 
+	private static SimpleAdapter adapterFamily;
+	private static ArrayList<Map<String, String>> familyData;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -35,7 +38,7 @@ public class EmployeesActivity extends Activity {
 
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment(),"employee")
+					.add(R.id.container, new PlaceholderFragment(), "employee")
 					.commit();
 		}
 	}
@@ -60,7 +63,7 @@ public class EmployeesActivity extends Activity {
 		int id = item.getItemId();
 		if (id == R.id.action_employee) {
 			getFragmentManager().beginTransaction()
-					.replace(R.id.container, new PlaceholderFragment(),"employee")
+					.replace(R.id.container, new PlaceholderFragment(), "employee")
 					.commit();
 			return true;
 		} else if (id == R.id.action_family) {
@@ -74,6 +77,29 @@ public class EmployeesActivity extends Activity {
 
 			if (getFragmentManager().findFragmentByTag("family") != null) {
 				Log.v("TEST", "family");
+
+				// SQLiteHelperのコンストラクターを呼び出します。
+				FamilySQLiteOpenHelper dbHelper = new FamilySQLiteOpenHelper(this);
+				SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+				// Daoクラスのコンストラクターを呼び出します。
+				Dao dao = new Dao(db);
+
+				Family family = new Family("00001", "妻", "花田花子");
+
+				Map<String, String> data = new HashMap<String, String>();
+				data.put("_id", family.get_id());
+				data.put("relationship", family.getRelationship());
+				data.put("name", family.getName());
+
+				// データを1人分追加します。
+				if (-1 != dao.insertFamily(family)) {
+					familyData.add(data);
+					adapterFamily.notifyDataSetChanged();
+					Log.v("TEST", "追加");
+				}
+
+				db.close();
 
 			} else if (getFragmentManager().findFragmentByTag("employee") != null) {
 				Log.v("TEST", "employee");
@@ -154,7 +180,6 @@ public class EmployeesActivity extends Activity {
 	public static class FamilyFragment extends Fragment {
 
 		final static int DELETE_CODE = 1;
-		private ArrayList<Map<String, String>> familyData;
 
 		public FamilyFragment() {
 		}
@@ -193,14 +218,14 @@ public class EmployeesActivity extends Activity {
 			}
 
 			// アダプターを作成します。
-			SimpleAdapter adapter = new SimpleAdapter(getActivity(),
+			adapterFamily = new SimpleAdapter(getActivity(),
 					familyData,
 					R.layout.simple_list_item_family,
 					new String[] { "_id", "relationship", "name" },
 					new int[] { R.id.familyIdTV, R.id.familyRelationshipTV, R.id.familyNameTV });
 
 			// リストビューにアダプターを設定します。
-			listView.setAdapter(adapter);
+			listView.setAdapter(adapterFamily);
 
 			// コンテキストメニューのためにリストビューを登録します。
 			registerForContextMenu(listView);
@@ -239,7 +264,25 @@ public class EmployeesActivity extends Activity {
 			//削除
 			case DELETE_CODE:
 
-				Log.v("TEST", data.get("name") + "のデータを削除しました。");
+				// SQLiteHelperのコンストラクターを呼び出します。
+				FamilySQLiteOpenHelper dbHelper = new FamilySQLiteOpenHelper(getActivity());
+				SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+				// Daoクラスのコンストラクターを呼び出します。
+				Dao dao = new Dao(db);
+
+				// DBから削除します。
+				if (1 == dao.deleteFamily(data.get("_id"), data.get("relationship"))) {
+					// リストからも削除し、アダプターに反映させます。
+					familyData.remove(info.position);
+					adapterFamily.notifyDataSetChanged();
+
+					Log.v("TEST", data.get("name") + "のデータを削除しました。");
+
+				}
+
+				db.close();
+
 				return true;
 			default:
 				Log.v("TEST", "コンテキストメニューを選択しました。");
@@ -247,7 +290,6 @@ public class EmployeesActivity extends Activity {
 			}
 
 		}
-
 	}
 
 }
