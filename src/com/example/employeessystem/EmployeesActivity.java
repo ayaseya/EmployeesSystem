@@ -9,11 +9,15 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -24,9 +28,14 @@ public class EmployeesActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_employees);
 
+		// actionbarのホームアイコンを非表示にします。
+		getActionBar().setDisplayShowHomeEnabled(false);
+		// actionbarのタイトルを非表示にします。
+		getActionBar().setDisplayShowTitleEnabled(false);
+
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment())
+					.add(R.id.container, new PlaceholderFragment(),"employee")
 					.commit();
 		}
 	}
@@ -36,6 +45,10 @@ public class EmployeesActivity extends Activity {
 
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.employees, menu);
+
+		menu.findItem(R.id.action_employee).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+		menu.findItem(R.id.action_family).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+		menu.findItem(R.id.action_add).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		return true;
 	}
 
@@ -45,7 +58,27 @@ public class EmployeesActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
+		if (id == R.id.action_employee) {
+			getFragmentManager().beginTransaction()
+					.replace(R.id.container, new PlaceholderFragment(),"employee")
+					.commit();
+			return true;
+		} else if (id == R.id.action_family) {
+
+			getFragmentManager().beginTransaction()
+					.replace(R.id.container, new FamilyFragment(), "family")
+					.commit();
+
+			return true;
+		} else if (id == R.id.action_add) {
+
+			if (getFragmentManager().findFragmentByTag("family") != null) {
+				Log.v("TEST", "family");
+
+			} else if (getFragmentManager().findFragmentByTag("employee") != null) {
+				Log.v("TEST", "employee");
+			}
+
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -64,9 +97,9 @@ public class EmployeesActivity extends Activity {
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_employees, container, false);
 
-//			TextView tv = (TextView) rootView.findViewById(R.id.textView1);
+			//			TextView tv = (TextView) rootView.findViewById(R.id.textView1);
 			// リストビューのインスタンスを取得します。
-			ListView listView = (ListView) rootView.findViewById(R.id.employeeListView);
+			ListView listView = (ListView) rootView.findViewById(R.id.familyListView);
 
 			// SQLiteHelperのコンストラクターを呼び出します。
 			EmployeeSQLiteOpenHelper dbHelper = new EmployeeSQLiteOpenHelper(getActivity());
@@ -116,6 +149,105 @@ public class EmployeesActivity extends Activity {
 
 			return rootView;
 		}
+	}
+
+	public static class FamilyFragment extends Fragment {
+
+		final static int DELETE_CODE = 1;
+		private ArrayList<Map<String, String>> familyData;
+
+		public FamilyFragment() {
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View rootView = inflater.inflate(R.layout.fragment_family, container, false);
+
+			//			TextView tv = (TextView) rootView.findViewById(R.id.textView1);
+			// リストビューのインスタンスを取得します。
+			ListView listView = (ListView) rootView.findViewById(R.id.familyListView);
+
+			// SQLiteHelperのコンストラクターを呼び出します。
+			FamilySQLiteOpenHelper dbHelper = new FamilySQLiteOpenHelper(getActivity());
+			SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+			// Daoクラスのコンストラクターを呼び出します。
+			Dao dao = new Dao(db);
+
+			// リストに家族の情報を格納します。
+			List<Family> list = dao.findAllFamily();
+
+			db.close();
+
+			// SimpleAdapterに渡すデータを作成します。
+			familyData = new ArrayList<Map<String, String>>();
+
+			// 社員データを連想配列にして、employeeDataに格納します。
+			for (Family tmp : list) {
+				Map<String, String> data = new HashMap<String, String>();
+				data.put("_id", tmp.get_id());
+				data.put("relationship", tmp.getRelationship());
+				data.put("name", tmp.getName());
+				familyData.add(data);
+			}
+
+			// アダプターを作成します。
+			SimpleAdapter adapter = new SimpleAdapter(getActivity(),
+					familyData,
+					R.layout.simple_list_item_family,
+					new String[] { "_id", "relationship", "name" },
+					new int[] { R.id.familyIdTV, R.id.familyRelationshipTV, R.id.familyNameTV });
+
+			// リストビューにアダプターを設定します。
+			listView.setAdapter(adapter);
+
+			// コンテキストメニューのためにリストビューを登録します。
+			registerForContextMenu(listView);
+
+			return rootView;
+		}
+
+		// コンテキストメニューを作成します。
+		@Override
+		public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
+			super.onCreateContextMenu(menu, view, menuInfo);
+
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+			// リストビューにキャストします。
+			ListView listView = (ListView) view;
+			// クリックされた場所のインスタンスを取得し、Map型のデータにキャストします。
+			Map<String, String> data = (Map<String, String>) listView.getItemAtPosition(info.position);
+
+			menu.setHeaderTitle("" + data.get("name") + "のデータを削除しますか?");
+			menu.add(0, DELETE_CODE, 0, "OK");
+
+		}
+
+		// コンテキストメニューをクリックした時の挙動を設定します。
+
+		@Override
+		public boolean onContextItemSelected(MenuItem item) {
+
+			// リストビューでクリックした場所を取得するためAdapterContextMenuInfoを取得します。
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+
+			// positionから全家族のデータからクリックされた場所の個人データを取得します。
+			Map<String, String> data = familyData.get(info.position);
+
+			switch (item.getItemId()) {
+			//削除
+			case DELETE_CODE:
+
+				Log.v("TEST", data.get("name") + "のデータを削除しました。");
+				return true;
+			default:
+				Log.v("TEST", "コンテキストメニューを選択しました。");
+				return super.onContextItemSelected(item);
+			}
+
+		}
+
 	}
 
 }

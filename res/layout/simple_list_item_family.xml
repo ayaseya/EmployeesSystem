@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:orientation="horizontal" >
+
+    <TextView
+        android:id="@+id/familyIdTV"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:layout_weight="3"
+        android:background="#ffffff"
+        android:gravity="center"
+        android:text="00000"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/familyRelationshipTV"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:layout_marginLeft="1dp"
+        android:layout_marginRight="1dp"
+        android:layout_weight="2"
+        android:background="#ffffff"
+        android:paddingLeft="5dp"
+        android:text="妻"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/familyNameTV"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:layout_weight="5"
+        android:background="#ffffff"
+        android:paddingLeft="5dp"
+        android:text="山田花子"
+        android:textSize="24sp" />
+
+</LinearLayout>

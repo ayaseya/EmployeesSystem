@@ -2,10 +2,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.employeessystem.EmployeesActivity" >
 
+
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_employee"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:title="社員"/>
+    <item
+        android:id="@+id/action_family"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="家族"/>
+    <item
+        android:id="@+id/action_add"
+        android:icon="@android:drawable/ic_menu_add"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="追加"/>
 
 </menu>

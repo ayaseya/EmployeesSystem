@@ -25,19 +25,19 @@
             android:layout_marginBottom="1dp"
             android:layout_marginLeft="1dp"
             android:layout_marginRight="1dp"
-            android:layout_weight="5"
+            android:layout_weight="2"
             android:background="#ffffff"
             android:gravity="center"
-            android:text="名前" />
+            android:text="続柄" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="1dp"
-            android:layout_weight="2"
+            android:layout_weight="5"
             android:background="#ffffff"
             android:gravity="center"
-            android:text="家族数" />
+            android:text="名前" />
 
     </LinearLayout>
 

@@ -55,4 +55,28 @@ public class Dao {
 		return list;
 	}
 
+	public List<Family> findAllFamily() {
+		List<Family> list = new ArrayList<Family>();
+
+		String sql = "SELECT * FROM family_tbl;";
+
+		Log.v("CMS", "SQL文=" + sql);
+
+		// 第一引数SQL文、第二引数はSQL文内に埋め込まれた「?」にはめ込むString配列です。
+		//
+		Cursor cursor = db.rawQuery(sql, null);
+
+		while (cursor.moveToNext()) {
+			Family family = new Family();
+			family.set_id(cursor.getString(0));
+			family.setRelationship(cursor.getString(1));
+			family.setName(cursor.getString(2));
+
+			Log.v("TEST", "社員>" + cursor.getString(0) + "|" + cursor.getString(1) + "|" + cursor.getString(2));
+
+			list.add(family);
+		}
+		return list;
+	}
+
 }
