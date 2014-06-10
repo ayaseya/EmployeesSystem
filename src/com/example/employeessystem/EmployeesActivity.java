@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 public class EmployeesActivity extends Activity {
 
@@ -83,7 +84,7 @@ public class EmployeesActivity extends Activity {
 				SQLiteDatabase db = dbHelper.getReadableDatabase();
 
 				// Daoクラスのコンストラクターを呼び出します。
-				Dao dao = new Dao(db);
+				Dao dao = new Dao(db, this);
 
 				Family family = new Family("00001", "妻", "花田花子");
 
@@ -93,12 +94,14 @@ public class EmployeesActivity extends Activity {
 				data.put("name", family.getName());
 
 				// データを1人分追加します。
-				if (-1 != dao.insertFamily(family)) {
+				if (dao.insertF(family) == true) {
+
+					// リストビューに反映します。
 					familyData.add(data);
 					adapterFamily.notifyDataSetChanged();
-					Log.v("TEST", "追加");
+				}else{
+					Toast.makeText(this, "エラーが発生したためDBをロールバックします", Toast.LENGTH_SHORT).show();
 				}
-
 				db.close();
 
 			} else if (getFragmentManager().findFragmentByTag("employee") != null) {
@@ -132,7 +135,7 @@ public class EmployeesActivity extends Activity {
 			SQLiteDatabase db = dbHelper.getReadableDatabase();
 
 			// Daoクラスのコンストラクターを呼び出します。
-			Dao dao = new Dao(db);
+			Dao dao = new Dao(db, getActivity());
 
 			// リストに全社員の情報を格納します。
 			List<Employee> list = dao.findAllEmployees();
@@ -198,7 +201,7 @@ public class EmployeesActivity extends Activity {
 			SQLiteDatabase db = dbHelper.getReadableDatabase();
 
 			// Daoクラスのコンストラクターを呼び出します。
-			Dao dao = new Dao(db);
+			Dao dao = new Dao(db, getActivity());
 
 			// リストに家族の情報を格納します。
 			List<Family> list = dao.findAllFamily();
@@ -269,17 +272,15 @@ public class EmployeesActivity extends Activity {
 				SQLiteDatabase db = dbHelper.getReadableDatabase();
 
 				// Daoクラスのコンストラクターを呼び出します。
-				Dao dao = new Dao(db);
+				Dao dao = new Dao(db, getActivity());
 
 				// DBから削除します。
-				if (1 == dao.deleteFamily(data.get("_id"), data.get("relationship"))) {
-					// リストからも削除し、アダプターに反映させます。
-					familyData.remove(info.position);
-					adapterFamily.notifyDataSetChanged();
+				dao.deleteF(data.get("_id"), data.get("relationship"));
+				// リストからも削除し、アダプターに反映させます。
+				familyData.remove(info.position);
+				adapterFamily.notifyDataSetChanged();
 
-					Log.v("TEST", data.get("name") + "のデータを削除しました。");
-
-				}
+				Log.v("TEST", data.get("name") + "のデータを削除しました。");
 
 				db.close();
 
